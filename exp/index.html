@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+    #write_cmt {
+        width:80%;
+        height: 200px;
+        border: 1px solid #aaa;
+        overflow-y: auto;
+    }
+    .img-list >img {
+        width:30px; height:30px;
+    }
+    </style>
+</head>
+<body>
+    <div id="write_cmt" contenteditable="true"></div>
+    <div id="emoticonBox">
+        <img src="cmt_img/98.png" alt="/화나/" title="/화나/">
+        <img src="cmt_img/99.png" alt="/하하/" title="/하하/">
+        <img src="cmt_img/100.png" alt="/ㅠㅠ/" title="/ㅠㅠ/">
+    </div>
+    <div id="text_out"></div>
+
+    <button id="btnTest">test</button>
+    <button id="write_btn">등록</button>
+
+<script>
+!function() {
+    var editor = document.getElementById('write_cmt');
+
+    // 이모티콘 박스
+    document.getElementById('emoticonBox')
+    .addEventListener('click', function(evt) {
+        var target = evt.target;
+        if(!target) return;
+
+        var sel = window.getSelection();
+        if(!sel.rangeCount) return;
+
+        var range = sel.getRangeAt(0);
+        if(!range) return;
+
+        var offset = range.endOffset;
+        var container = range.commonAncestorContainer;
+        var img = document.createElement('img');
+        img.src = target.src;
+        img.title = img.alt = target.alt;
+
+        if(container == editor) {
+            var after = container.childNodes[offset];
+            if(after) editor.insertBefore(img, after);
+            else  editor.appendChild(img);
+
+            range.setStart(editor, offset+1);
+            range.collapse(true);
+        } else if(container.parentNode == editor) {
+            var value = container && container.nodeValue;
+            var befor = document.createTextNode(value ? value.substr(0, offset) : '');
+            var after = document.createTextNode(value ? value.substr(offset): '');
+
+            editor.insertBefore(befor, container);
+            editor.insertBefore(img, container);
+            editor.insertBefore(after, container);
+            container.nodeValue = '';
+
+            range.setStart(after, 0);
+            range.collapse(true);
+        }
+
+        sel.removeAllRanges();
+        sel.addRange(range);
+    });
+
+    // 등록버튼
+    document.getElementById('write_btn')
+    .addEventListener('click', function() {
+        var txt = editor.innerHTML
+            .replace(/<p>|<\/div>/gi, '')
+            .replace(/<\/p>|<div>/gi, '\n')
+            .replace(/<img[^>]*alt=[\"']?([^>\"']+)[\"']?[^>]*>/gi, function(img, alt) {
+                return alt||'';
+            });
+        document.getElementById('text_out').innerText = txt;
+    });
+}();
+</script>
+</body>
+</html>
